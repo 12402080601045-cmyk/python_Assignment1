@@ -1,106 +1,75 @@
-# Assignment 1
-# Question 1 - Campus Merit Analyzer using Compound Data Structures
-
 def main():
-
-    first_line = input().split()
-
-    if len(first_line) != 3:
-        print("INVALID")
-        return
-
-    n, k, m = map(int, first_line)
-
-    if n < 1 or k < 1 or m < 1:
-        print("INVALID")
-        return
+    # Read n, k and m
+    n, k, m = map(int, input().split())
 
     students = []
+    semester_groups = {}
+    subject_top = {}
 
+    # Read student records
     for _ in range(n):
+        data = input().split()
 
-        parts = input().split()
-
-        if len(parts) != 4 + m:
-            print("INVALID")
-            return
-
-        enrollment = parts[0]
-        name = parts[1]
-        semester = int(parts[2])
-        cpi = float(parts[3])
-
-        marks = list(map(int, parts[4:]))
-
-        if semester < 1 or semester > 8:
-            print("INVALID")
-            return
-
-        if any(mark < 0 or mark > 100 for mark in marks):
-            print("INVALID")
-            return
+        enrollment = data[0]
+        name = data[1]
+        semester = int(data[2])
+        cpi = float(data[3])
+        marks = list(map(int, data[4:]))
 
         average = sum(marks) / m
 
-        students.append({
-            "enrollment": enrollment,
-            "name": name,
-            "semester": semester,
-            "cpi": cpi,
-            "marks": marks,
-            "average": average
-        })
+        # Store record using tuple
+        student = (enrollment, name, semester, cpi, marks, average)
+        students.append(student)
 
-    # Group students by semester
-    semester_students = {}
+        # Group students semester-wise
+        if semester not in semester_groups:
+            semester_groups[semester] = []
 
-    for student in students:
-        semester = student["semester"]
+        semester_groups[semester].append(student)
 
-        if semester not in semester_students:
-            semester_students[semester] = []
+        # Find subject-wise toppers
+        for j in range(m):
+            subject = j + 1
+            mark = marks[j]
 
-        semester_students[semester].append(student)
+            if subject not in subject_top:
+                subject_top[subject] = (mark, [enrollment])
+            else:
+                best_mark, enrollments = subject_top[subject]
 
-    # Print top K students for each semester
-    for semester in sorted(semester_students):
+                if mark > best_mark:
+                    subject_top[subject] = (mark, [enrollment])
 
-        students_in_semester = semester_students[semester]
+                elif mark == best_mark:
+                    enrollments.append(enrollment)
 
-        students_in_semester.sort(
-            key=lambda student: (
-                -student["cpi"],
-                -student["average"],
-                student["enrollment"]
-            )
+    # Print semester-wise top K students
+    for semester in sorted(semester_groups):
+        group = semester_groups[semester]
+
+        # Sort according to:
+        # 1. Higher CPI
+        # 2. Higher average marks
+        # 3. Smaller enrollment number
+        group.sort(
+            key=lambda x: (-x[3], -x[5], x[0])
         )
 
-        top_students = students_in_semester[:k]
+        top_students = group[:k]
 
         print(
-            f"Semester {semester}:",
-            *[student["enrollment"] for student in top_students]
+            f"Semester {semester}: "
+            + " ".join(student[0] for student in top_students)
         )
 
-    # Find subject-wise highest marks
-    for subject_index in range(m):
-
-        highest_mark = max(
-            student["marks"][subject_index]
-            for student in students
-        )
-
-        toppers = [
-            student["enrollment"]
-            for student in students
-            if student["marks"][subject_index] == highest_mark
-        ]
-
-        toppers.sort()
+    # Print subject-wise toppers
+    for subject in range(1, m + 1):
+        enrollments = sorted(subject_top[subject][1])
 
         print(
-            f"S{subject_index + 1}:",
-            *toppers
+            f"S{subject}: "
+            + " ".join(enrollments)
         )
 
 
