@@ -1,5 +1,6 @@
+
 def main():
-    # Read n, k and m
+    # Read number of students, top K students, and number of subjects
     n, k, m = map(int, input().split())
 
     students = []
@@ -14,21 +15,22 @@ def main():
         name = data[1]
         semester = int(data[2])
         cpi = float(data[3])
-        marks = list(map(int, data[4:]))
+        marks = list(map(int, data[4:4 + m]))
 
+        # Calculate average marks
         average = sum(marks) / m
 
-        # Store record using tuple
+        # Store student details in a tuple
         student = (enrollment, name, semester, cpi, marks, average)
         students.append(student)
 
-        # Group students semester-wise
+        # Group students by semester
         if semester not in semester_groups:
             semester_groups[semester] = []
 
         semester_groups[semester].append(student)
 
-        # Find subject-wise toppers
+        # Find the highest marks in each subject
         for j in range(m):
             subject = j + 1
             mark = marks[j]
@@ -44,17 +46,13 @@ def main():
                 elif mark == best_mark:
                     enrollments.append(enrollment)
 
-    # Print semester-wise top K students
+    # Print the top K students in each semester
     for semester in sorted(semester_groups):
         group = semester_groups[semester]
 
-        # Sort according to:
-        # 1. Higher CPI
-        # 2. Higher average marks
-        # 3. Smaller enrollment number
-        group.sort(
-            key=lambda x: (-x[3], -x[5], x[0])
-        )
+        # Sort by higher CPI, higher average marks,
+        # then smaller enrollment number
+        group.sort(key=lambda x: (-x[3], -x[5], x[0]))
 
         top_students = group[:k]
 
@@ -63,14 +61,11 @@ def main():
             + " ".join(student[0] for student in top_students)
         )
 
-    # Print subject-wise toppers
+    # Print the toppers for each subject
     for subject in range(1, m + 1):
         enrollments = sorted(subject_top[subject][1])
 
-        print(
-            f"S{subject}: "
-            + " ".join(enrollments)
-        )
+        print(f"S{subject}: " + " ".join(enrollments))
 
 
 if __name__ == "__main__":
